@@ -1,0 +1,81 @@
+name: lumatalk
+description: A live speech translation app with real-time audio I/O and phrase library
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+
+  # Navigation
+  go_router: ^13.0.0
+
+  # WebRTC
+  flutter_webrtc: ^0.10.5
+  web_socket_channel: ^2.4.0
+
+  # Audio
+  just_audio: ^0.9.36
+  record: ^5.0.4
+  audio_session: ^0.1.18
+
+  # Database
+  sqflite: ^2.3.2
+  path_provider: ^2.1.2
+  path: ^1.8.3
+
+  # UI Components
+  flutter_animate: ^4.5.0
+  google_fonts: ^6.1.0
+  fl_chart: ^0.66.0
+
+  # Utilities
+  intl: ^0.19.0
+  uuid: ^4.3.3
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.8.1
+
+  # Export
+  pdf: ^3.10.7
+  share_plus: ^7.2.1
+  permission_handler: ^11.2.0
+
+  # Network
+  http: ^1.2.0
+  dio: ^5.4.0
+
+  # Storage
+  shared_preferences: ^2.2.2
+
+  # Icons
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  build_runner: ^2.4.8
+  riverpod_generator: ^2.3.9
+  freezed: ^2.4.6
+  json_serializable: ^6.7.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/sounds/
+
+  fonts:
+    - family: ProductSans
+      fonts:
+        - asset: assets/fonts/ProductSans-Regular.ttf
+        - asset: assets/fonts/ProductSans-Bold.ttf
+          weight: 700

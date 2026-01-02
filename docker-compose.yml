@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: lumatalk-postgres
+    environment:
+      POSTGRES_DB: lumatalk
+      POSTGRES_USER: lumatalk
+      POSTGRES_PASSWORD: changeme
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lumatalk"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: lumatalk-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/lumatalk
+      SPRING_DATASOURCE_USERNAME: lumatalk
+      SPRING_DATASOURCE_PASSWORD: changeme
+      ASR_WORKER_URL: http://asr_worker:8001
+      MT_WORKER_URL: http://mt_worker:8002
+      TTS_WORKER_URL: http://tts_worker:8003
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  asr_worker:
+    build: ./inference/asr_worker
+    container_name: lumatalk-asr
+    ports:
+      - "8001:8001"
+    volumes:
+      - model_cache:/root/.cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  mt_worker:
+    build: ./inference/mt_worker
+    container_name: lumatalk-mt
+    ports:
+      - "8002:8002"
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /app/credentials/gcp-key.json
+    volumes:
+      - ./credentials:/app/credentials:ro
+    restart: unless-stopped
+
+  tts_worker:
+    build: ./inference/tts_worker
+    container_name: lumatalk-tts
+    ports:
+      - "8003:8003"
+    environment:
+      AZURE_SPEECH_KEY: ${AZURE_SPEECH_KEY}
+      AZURE_SPEECH_REGION: ${AZURE_SPEECH_REGION}
+    restart: unless-stopped
+
+  coturn:
+    image: coturn/coturn:latest
+    container_name: lumatalk-turn
+    ports:
+      - "3478:3478/tcp"
+      - "3478:3478/udp"
+      - "49152-65535:49152-65535/udp"
+    environment:
+      TURN_USERNAME: ${TURN_USERNAME:-turnuser}
+      TURN_PASSWORD: ${TURN_PASSWORD:-turnpass}
+    command:
+      - "-n"
+      - "--log-file=stdout"
+      - "--listening-port=3478"
+      - "--realm=lumatalk.com"
+      - "--user=${TURN_USERNAME:-turnuser}:${TURN_PASSWORD:-turnpass}"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  model_cache:
